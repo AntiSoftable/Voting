@@ -1,0 +1,39 @@
+pragma solidity ^0.8.0;
+
+contract Voting {
+    struct Candidate {
+        string name;
+        uint256 voteCount;
+    }
+
+    mapping(uint256 => Candidate) public candidates;
+    mapping(address => bool) public voters;
+    uint256 public candidateCount;
+
+    event VoteCast(address indexed _voter, uint256 indexed _candidateId);
+
+    constructor(string[] memory _candidateNames) {
+        for (uint256 i = 0; i < _candidateNames.length; i++) {
+            candidates[i] = Candidate({
+                name: _candidateNames[i],
+                voteCount: 0
+            });
+        }
+        candidateCount = _candidateNames.length;
+    }
+
+    function castVote(uint256 _candidateId) public {
+        require(_candidateId < candidateCount, "Invalid candidate ID.");
+        require(!voters[msg.sender], "You have already voted.");
+
+        candidates[_candidateId].voteCount++;
+        voters[msg.sender] = true;
+
+        emit VoteCast(msg.sender, _candidateId);
+    }
+
+    function getCandidateVoteCount(uint256 _candidateId) public view returns (uint256) {
+        require(_candidateId < candidateCount, "Invalid candidate ID.");
+        return candidates[_candidateId].voteCount;
+    }
+}
